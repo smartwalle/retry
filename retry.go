@@ -10,7 +10,7 @@ func Do[T any](ctx context.Context, backoff Backoff, max int, fn func(context.Co
 	var value T
 	for i := 0; i <= max; i++ {
 		if i > 0 {
-			var delay = backoff.Backoff(i)
+			var delay = backoff.Duration(i)
 			var timer = time.NewTimer(delay)
 
 			select {

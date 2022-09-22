@@ -3,5 +3,5 @@ package retry
 import "time"
 
 type Backoff interface {
-	Backoff(retries int) time.Duration
+	Duration(retries int) time.Duration
 }

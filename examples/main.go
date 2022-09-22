@@ -22,6 +22,6 @@ func main() {
 type Backoff struct {
 }
 
-func (*Backoff) Backoff(retries int) time.Duration {
+func (*Backoff) Duration(retries int) time.Duration {
 	return time.Second * time.Duration(retries)
 }
