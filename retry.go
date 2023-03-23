@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func Do[T any](ctx context.Context, backoff Backoff, max int, fn func(context.Context) (T, error)) (T, error) {
+func Do[T any](ctx context.Context, backoff Backoff, max int, fn func(context.Context, int) (T, error)) (T, error) {
 	var err error
 	var value T
 	for i := 0; i <= max; i++ {
@@ -21,13 +21,14 @@ func Do[T any](ctx context.Context, backoff Backoff, max int, fn func(context.Co
 			}
 		}
 
-		value, err = fn(ctx)
+		value, err = fn(ctx, i)
 		if err == nil {
 			return value, nil
 		}
 
-		if ctx.Err() != nil {
-			return value, ctx.Err()
+		var ctxErr = ctx.Err()
+		if ctxErr != nil {
+			return value, ctxErr
 		}
 	}
 	return value, err

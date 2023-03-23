@@ -11,8 +11,8 @@ import (
 func main() {
 	var ctx, _ = context.WithTimeout(context.Background(), time.Second*10)
 
-	var value, err = retry.Do[int](ctx, &Backoff{}, 3, func(ctx context.Context) (int, error) {
-		fmt.Println("1", time.Now())
+	var value, err = retry.Do[int](ctx, &Backoff{}, 3, func(ctx context.Context, retries int) (int, error) {
+		fmt.Println(retries, time.Now())
 		return 10, errors.New("sss")
 	})
 
