@@ -2,6 +2,6 @@ package retry
 
 import "time"
 
-type Backoff interface {
+type BackoffStrategy interface {
 	Duration(retries int) time.Duration
 }

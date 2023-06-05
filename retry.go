@@ -5,12 +5,12 @@ import (
 	"time"
 )
 
-func Do[T any](ctx context.Context, backoff Backoff, max int, fn func(context.Context, int) (T, error)) (T, error) {
+func Do[T any](ctx context.Context, strategy BackoffStrategy, max int, fn func(context.Context, int) (T, error)) (T, error) {
 	var err error
 	var value T
 	for i := 0; i <= max; i++ {
 		if i > 0 {
-			var delay = backoff.Duration(i)
+			var delay = strategy.Duration(i)
 			var timer = time.NewTimer(delay)
 
 			select {
