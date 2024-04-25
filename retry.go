@@ -9,18 +9,8 @@ func Do[T any](ctx context.Context, strategy BackoffStrategy, maxRetries int, fn
 	var err error
 	var value T
 	for i := 0; i <= maxRetries; i++ {
-		value, err = fn(ctx, i)
-		if err == nil {
-			return value, nil
-		}
-
-		var nErr = ctx.Err()
-		if nErr != nil {
-			return value, nErr
-		}
-
-		if i < maxRetries {
-			var delay = strategy.Duration(i + 1)
+		if i > 0 {
+			var delay = strategy.Duration(i)
 			var timer = time.NewTimer(delay)
 
 			select {
@@ -29,6 +19,16 @@ func Do[T any](ctx context.Context, strategy BackoffStrategy, maxRetries int, fn
 				return value, ctx.Err()
 			case <-timer.C:
 			}
+		}
+
+		value, err = fn(ctx, i)
+		if err == nil {
+			return value, nil
+		}
+
+		var nErr = ctx.Err()
+		if nErr != nil {
+			return value, nErr
 		}
 	}
 	return value, err
