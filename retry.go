@@ -5,31 +5,29 @@ import (
 	"time"
 )
 
-func Do[T any](ctx context.Context, strategy BackoffStrategy, maxAttempts int, fn func(ctx context.Context, attempt int) (T, error)) (T, error) {
-	var err error
-	var value T
-	for attempt := 0; attempt <= maxAttempts; attempt++ {
+func Do(ctx context.Context, backoff Backoff, maxAttempts int, fn func(ctx context.Context, attempt int) error) (err error) {
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		var delay = time.Duration(0)
 		if attempt > 0 {
-			var delay = strategy.Duration(attempt)
+			delay = backoff.Delay(attempt)
+		}
+		if delay > 0 {
 			var timer = time.NewTimer(delay)
-
 			select {
 			case <-ctx.Done():
 				timer.Stop()
-				return value, ctx.Err()
+				return ctx.Err()
 			case <-timer.C:
 			}
 		}
 
-		value, err = fn(ctx, attempt)
-		if err == nil {
-			return value, nil
+		if err = ctx.Err(); err != nil {
+			return err
 		}
 
-		var nErr = ctx.Err()
-		if nErr != nil {
-			return value, nErr
+		if err = fn(ctx, attempt); err == nil {
+			return nil
 		}
 	}
-	return value, err
+	return err
 }
