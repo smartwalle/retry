@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func Do(ctx context.Context, backoff Backoff, maxAttempts int, fn func(ctx context.Context, attempt int) error) (err error) {
+func Do[T any](ctx context.Context, backoff Backoff, maxAttempts int, fn func(ctx context.Context, attempt int) (T, error)) (value T, err error) {
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		var delay = time.Duration(0)
 		if attempt > 0 {
@@ -16,18 +16,18 @@ func Do(ctx context.Context, backoff Backoff, maxAttempts int, fn func(ctx conte
 			select {
 			case <-ctx.Done():
 				timer.Stop()
-				return ctx.Err()
+				return value, ctx.Err()
 			case <-timer.C:
 			}
 		}
 
 		if err = ctx.Err(); err != nil {
-			return err
+			return value, err
 		}
 
-		if err = fn(ctx, attempt); err == nil {
-			return nil
+		if value, err = fn(ctx, attempt); err == nil {
+			return value, nil
 		}
 	}
-	return err
+	return value, err
 }
