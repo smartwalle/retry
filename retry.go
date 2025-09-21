@@ -6,11 +6,19 @@ import (
 )
 
 func Do[T any](ctx context.Context, backoff Backoff, maxAttempts int, fn func(ctx context.Context, attempt int) (T, error)) (value T, err error) {
-	for attempt := 0; attempt < maxAttempts; attempt++ {
-		var delay = time.Duration(0)
-		if attempt > 0 {
-			delay = backoff.Delay(attempt)
+	var attempt = 0
+	for {
+		if value, err = fn(ctx, attempt); err == nil {
+			return value, nil
 		}
+
+		attempt += 1
+
+		if attempt > maxAttempts {
+			return value, err
+		}
+
+		var delay = backoff.Delay(attempt)
 		if delay > 0 {
 			var timer = time.NewTimer(delay)
 			select {
@@ -24,10 +32,5 @@ func Do[T any](ctx context.Context, backoff Backoff, maxAttempts int, fn func(ct
 		if err = ctx.Err(); err != nil {
 			return value, err
 		}
-
-		if value, err = fn(ctx, attempt); err == nil {
-			return value, nil
-		}
 	}
-	return value, err
 }
