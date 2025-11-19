@@ -51,7 +51,7 @@ func TestRetry(t *testing.T) {
 
 func TestRetryTimeout(t *testing.T) {
 	var backoff = &ConstantBackoff{
-		RetryDelay: 1,
+		RetryDelay: 3,
 	}
 
 	var ctx, cancel = context.WithTimeout(context.Background(), time.Second*6)
