@@ -18,14 +18,18 @@ func Do[T any](ctx context.Context, backoff Backoff, maxAttempts int, fn func(ct
 			return value, err
 		}
 
+		if !backoff.ShouldRetry(err) {
+			return value, err
+		}
+
 		var delay = backoff.Delay(attempt)
 		if delay > 0 {
 			var timer = time.NewTimer(delay)
 			select {
+			case <-timer.C:
 			case <-ctx.Done():
 				timer.Stop()
 				return value, ctx.Err()
-			case <-timer.C:
 			}
 		}
 

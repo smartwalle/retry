@@ -16,6 +16,10 @@ func (b *ConstantBackoff) Delay(retries int) time.Duration {
 	return time.Duration(b.RetryDelay) * time.Second
 }
 
+func (b *ConstantBackoff) ShouldRetry(err error) bool {
+	return true
+}
+
 func TestRetry(t *testing.T) {
 	var backoff = &ConstantBackoff{
 		RetryDelay: 1,
