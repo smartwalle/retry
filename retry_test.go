@@ -12,7 +12,7 @@ type ConstantBackoff struct {
 	RetryDelay int
 }
 
-func (b *ConstantBackoff) Delay(retries int) time.Duration {
+func (b *ConstantBackoff) Backoff(retries int) time.Duration {
 	return time.Duration(b.RetryDelay) * time.Second
 }
 
