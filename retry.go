@@ -8,6 +8,10 @@ import (
 func Do[T any](ctx context.Context, strategy Strategy, maxAttempts int, fn func(ctx context.Context, attempt int) (T, error)) (value T, err error) {
 	var attempt = 0
 	for {
+		if err = ctx.Err(); err != nil {
+			return value, err
+		}
+
 		if value, err = fn(ctx, attempt); err == nil {
 			return value, nil
 		}
@@ -31,10 +35,6 @@ func Do[T any](ctx context.Context, strategy Strategy, maxAttempts int, fn func(
 				timer.Stop()
 				return value, ctx.Err()
 			}
-		}
-
-		if err = ctx.Err(); err != nil {
-			return value, err
 		}
 	}
 }
