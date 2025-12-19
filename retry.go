@@ -26,15 +26,24 @@ func Do[T any](ctx context.Context, strategy Strategy, maxAttempts int, fn func(
 			return value, err
 		}
 
-		var delay = strategy.Backoff(attempt)
-		if delay > 0 {
-			var timer = time.NewTimer(delay)
-			select {
-			case <-timer.C:
-			case <-ctx.Done():
-				timer.Stop()
-				return value, ctx.Err()
-			}
+		if err = delay(ctx, strategy.Backoff(attempt)); err != nil {
+			return value, err
 		}
+	}
+}
+
+func delay(ctx context.Context, delay time.Duration) error {
+	if delay <= 0 {
+		return nil
+	}
+
+	var timer = time.NewTimer(delay)
+	defer timer.Stop()
+
+	select {
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
