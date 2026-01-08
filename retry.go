@@ -22,11 +22,11 @@ func Do[T any](ctx context.Context, strategy Strategy, maxAttempts int, fn func(
 			return value, err
 		}
 
-		if !strategy.ShouldRetry(err) {
+		if !strategy.ShouldRetry(ctx, err) {
 			return value, err
 		}
 
-		if err = delay(ctx, strategy.Backoff(attempt)); err != nil {
+		if err = delay(ctx, strategy.Backoff(ctx, attempt)); err != nil {
 			return value, err
 		}
 	}

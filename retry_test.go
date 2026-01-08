@@ -12,11 +12,11 @@ type ConstantBackoff struct {
 	Delay int
 }
 
-func (b *ConstantBackoff) Backoff(attempt int) time.Duration {
+func (b *ConstantBackoff) Backoff(ctx context.Context, attempt int) time.Duration {
 	return time.Duration(b.Delay) * time.Second
 }
 
-func (b *ConstantBackoff) ShouldRetry(err error) bool {
+func (b *ConstantBackoff) ShouldRetry(ctx context.Context, err error) bool {
 	return true
 }
 
